@@ -1,0 +1,35 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Command\FileUpload\**" />
+    <Compile Remove="Query\FileUpload\**" />
+    <EmbeddedResource Remove="Command\FileUpload\**" />
+    <EmbeddedResource Remove="Query\FileUpload\**" />
+    <None Remove="Command\FileUpload\**" />
+    <None Remove="Query\FileUpload\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MailKit" Version="3.1.0" />
+    <PackageReference Include="MediatR" Version="10.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="6.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="6.0.0" />
+    <PackageReference Include="Microsoft.Extensions.ObjectPool" Version="6.0.1" />
+    <PackageReference Include="MimeKit" Version="3.1.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+    <PackageReference Include="RabbitMQ.Client" Version="6.2.2" />
+    <PackageReference Include="System.Configuration.ConfigurationManager" Version="6.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Zedcrest.Data\Zedcrest.Data.csproj" />
+    <ProjectReference Include="..\Zedcrest.Domain\Zedcrest.Domain.csproj" />
+  </ItemGroup>
+
+</Project>
