@@ -22,6 +22,5 @@ namespace Zedcrest.Data.Repository
             }
             return user;
         }
-
     }
 }

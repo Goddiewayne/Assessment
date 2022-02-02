@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Zedcrest.Api.Models;
 using Zedcrest.Api.Models.FileUpload;
 using Zedcrest.Data.RabbitQueue;
 using Zedcrest.Service.EmailService;
@@ -13,18 +14,10 @@ namespace Zedcrest.Api.Controllers
         private readonly IMediator _mediator;
         private readonly IMapper _mapper;
 
-        //private readonly ILogger<UserController> _logger;
-        //private readonly IBus _busControl;
+        private readonly ILogger<UserController> _logger;
+        private readonly IBus _busControl;
         private readonly EmailConfiguration _emailConfig;
 
-        //public UserController(IMediator mediator, IMapper mapper, ILogger<UserController> logger, IBus busControl, EmailConfiguration emailConfig)
-        //{
-        //    _mediator = mediator;
-        //    _mapper = mapper;
-        //    _logger = logger;
-        //    _busControl = busControl;
-        //    _emailConfig = emailConfig;
-        //}
 
         public UserController(IMediator mediator, IMapper mapper, EmailConfiguration emailConfig)
         {
@@ -37,8 +30,9 @@ namespace Zedcrest.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [Route("CreateUser")]
-        public async Task<ActionResult<CreateUserResponseDto>> Create([FromForm] CreateUserRequestDto createUserModel)
+        public async Task<ActionResult<Response>> Create([FromForm] CreateUserRequestDto createUserModel)
         {
+            var response = new Response();
             long size = createUserModel.FileUploads.Sum(f => f.Length);
             var files = createUserModel.FileUploads;
             List<FileUploadResponseDto> FileUploadResponseDtos = new();
@@ -100,8 +94,8 @@ namespace Zedcrest.Api.Controllers
                     }
                 }
                 user.FileUploads = fileUploads;
-                user.UniqueReference = Guid.NewGuid().ToString(); //$"{DateTime.Now:ddyyMMHHmmss}";
-                var response = await _mediator.Send(new CreateUserCommand
+                user.UniqueReference = Guid.NewGuid().ToString(); 
+                var createUserResponse = await _mediator.Send(new CreateUserCommand
                 {
                     User = user
                 });
@@ -127,52 +121,67 @@ namespace Zedcrest.Api.Controllers
 
                 var _emailService = new EmailService(_emailConfig);
                 _emailService.SendEmail(message);
-                return _mapper.Map<CreateUserResponseDto>(response);
+                var userResponse = _mapper.Map<CreateUserResponseDto>(createUserResponse);
+
+                if (userResponse != null)
+                {
+                    response.Data = userResponse;
+                    response.Message = "User Registration Successful";
+                    response.Success = true;
+                    response.Status_Code = "00";
+                }
+                else
+                {
+                    response.Message = "User Registration Failed";
+                    response.Success = false;
+                    response.Status_Code = "06";
+                }
             }
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
-            }
+                response.Message = ex.Message;
+                response.Success = false;
+                response.Status_Code = "06";
+            };
+
+            return response;
         }
+
 
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [Route("GetUserByEmailAndUniqueRef")]
-        public async Task<ActionResult<FindUserResponseDto>> GetUserByEmailAndUniqueRef([FromQuery] FindUserByEmailQuery requestModel)
+        public async Task<ActionResult<Response>> GetUserByEmailAndUniqueRef([FromQuery] FindUserByEmailQuery requestModel)
         {
+            var response = new Response();
             try
             {
                 var result = await _mediator.Send(requestModel);
-                return _mapper.Map<FindUserResponseDto>(result);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
-
-
-        [HttpGet]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [Route("FindUser")]
-        public async Task<ActionResult<FindUserResponseDto>> Find([FromQuery(Name = "id")] long userId)
-        {
-            try
-            {
-                var response = await _mediator.Send(new FindUserQuery
+                var findUserResponse = _mapper.Map<FindUserResponseDto>(result);
+                if(findUserResponse != null)
                 {
-                    UserId = userId
-                });
-
-                return _mapper.Map<FindUserResponseDto>(response);
+                    response.Data = findUserResponse;
+                    response.Message = "User Details Retrieved Successfully";
+                    response.Success = true;
+                    response.Status_Code = "00";
+                }
+                else
+                {
+                    response.Message = "Invalid email or unique reference";
+                    response.Success = false;
+                    response.Status_Code = "06";
+                }
+                
             }
             catch (Exception ex)
             {
-
-                return BadRequest(ex.Message);
+                response.Message = ex.Message;
+                response.Success = false;
+                response.Status_Code = "06";
             }
+            return response;
+
         }
     }
 }
