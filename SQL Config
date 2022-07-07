@@ -1,0 +1,14 @@
+UPDATE MANSARD_WEALTH_NEW.WM_TRANSACTION set Quantity=1400000,Amount=1400000, net_amt=1400000 WHERE customer_code='39116' and trans_type_code='MF-BUY' and TRUNC(value_date) = TO_DATE('03-APR-19','dd-MON/yy');
+
+UPDATE MANSARD_WEALTH_NEW.WM_TRANSACTION set Quantity=Quantity+2600000,Amount=Amount+2600000, net_amt=net_amt+2600000 WHERE customer_code='39116' and trans_type_code='MF-BUY' and TRUNC(value_date) = TO_DATE('03-APR-19','dd-MON/yy');
+
+SELECT * FROM MANSARD_WEALTH_NEW.WM_TRANSACTION WHERE customer_code='39116' and TRUNC(value_date) = TO_DATE('03-APR-19','dd-MON/yy');
+
+SELECT * FROM MANSARD_WEALTH_NEW.WM_TRANSACTION WHERE trans_type_code='MF-BUY' and TRUNC(value_date) = TO_DATE('03-APR-19','dd-MON/yy') ORDER BY Amount desc;
+
+HOST=192.168.0.52
+PORT=1521
+PROTOCOL=TCP
+SID=mansard
+ID=MANSARD_WEALTH_NEW
+PASSWORD=credence
