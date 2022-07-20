@@ -1,0 +1,301 @@
+Liquidation STP Query Sheet.sql
+Who has access
+Not shared
+System properties
+Type
+SQL
+Size
+15 KB
+Storage used
+15 KB
+Location
+SQL
+Owner
+me
+Modified
+5 Jan 2022 by me
+Opened
+14:22 by me
+Created
+9 Jan 2022 with Google Drive Web (Unverified)
+Add a description
+Viewers can download
+/****** Script for SelectTopNRows command from SSMS  ******/
+select * from STRequestLogs where LiqRequestId in (
+select rr.* from RedemptionRequests rr 
+inner join Prospects client on rr.ClientID = client.id
+inner join ProspectBanks pBank on rr.CreditBank = pBank.id
+inner join Banks bank on pBank.BankID = bank.id
+inner join Products product on rr.FundID = product.ID
+inner join AccountFunds accFund on client.id = accFund.ProspectID
+where (rr.PushedToWF = 0 or rr.PushedToWF is null) 
+and (rr.RequestStatus = 0 ) 
+and (rr.DateCreated > '2020-05-22') 
+and (rr.CreditBank not in (153854))
+and (rr.ClientID not in (67))
+order by rr.clientid desc
+)
+
+select * from SettlementTransactions where paidAt>='2021-04-05' and PaidAt<'2021-04-07'
+
+  select * from STRequestLogs where LiqRequestId in(Select LiqRequestId from STRequestLogs group by liqRequestId Having COUNT(LiqRequestId)>1) order by LiqRequestId
+  select * from STCredenceLogs order by STRequestLogId
+  --select * from STCredenceLogs where STRequestLogId in(select id from STRequestLogs where LiqRequestId in(Select LiqRequestId from STRequestLogs group by liqRequestId Having COUNT(LiqRequestId)>1)) order by STRequestLogId
+  select * from STGAPResponses where LiqRequestId in(Select LiqRequestId from STRequestLogs group by liqRequestId Having COUNT(LiqRequestId)>1) order by LiqRequestId
+  select * from STApprovals where LiqRequestId in(Select LiqRequestId from STRequestLogs group by liqRequestId Having COUNT(LiqRequestId)>1) order by LiqRequestId
+
+  
+  select rr.* from STGAPResponses stgr 
+  inner join RedemptionRequests rr on stgr.LiqRequestId=rr.Id
+  inner join ProspectBanks pb on rr.CreditBank=pb.id
+  inner join Banks b on pb.BankID=b.ID
+  where stgr.ResponseDescription like '%3rd party transfer limit.%' and stgr.DateCreated>='2020-05-04'and stgr.DateCreated<'2020-05-05' and b.id not in(9)
+
+  select Sum(rr.Amount) from STGAPResponses stgr 
+  inner join RedemptionRequests rr on stgr.LiqRequestId=rr.Id
+  inner join ProspectBanks pb on rr.CreditBank=pb.id
+  inner join Banks b on pb.BankID=b.ID
+  where stgr.ResponseCode ='00' and stgr.DateCreated>='2020-04-29'and stgr.DateCreated<'2020-04-30' and b.id not in(9)
+
+select * from RedemptionRequests Where PushedToWF=0 and RequestStatus =0 order by id desc
+select * from STRequestLogs order by id desc
+select * from STRequestLogs where LiqRequestId in (select Id from RedemptionRequests Where PushedToWF=0 and RequestStatus <> 1) order by id desc
+select * from STCredenceLogs where STRequestLogId in (select Id from STRequestLogs where LiqRequestId in (select Id from RedemptionRequests Where PushedToWF=0 and RequestStatus <> 1)) order by id desc
+--Delete from STGAPResponses where ResponseCode<>'00'
+
+select * from Prospects where id =311188
+
+select count(*), sum(Amount) from RedemptionRequests where PushedToWF=0 and RequestStatus <> 1
+
+select top 1000 * from redemptionrequests where pushedtowf=0 order by DateCreated desc 
+
+--update RedemptionRequests set PushedToWF=0 where id in (select LiqRequestId from STRequestLogs where  DateCreated >'2020-05-20')
+--Delete from STRequestLogs where DateCreated >'2020-05-20'
+--Delete from STCredenceLogs where DateCreated >'2020-05-20'
+--Delete from STApprovals where DateCreated >'2020-05-20'
+
+select top 200 * from RedemptionRequests where reasons like '%Bill Payment - VAS2NET%' and DateCreated >'2020-05-15 13:31' and RequestStatus=0  order by id desc
+select * from RedemptionRequests where DateCreated >'2020-05-15 13:31' and RequestStatus=0 
+select * from AccountFunds where clientaccountno in (48362,48362,43695,43695,36895,36895,33437,33437,36286,36286)
+
+
+
+select * from RedemptionRequests where id in (select LiqRequestId from STRequestLogs where  DateCreated >='2020-05-29')
+select * from STRequestLogs where  DateCreated >'2020-05-29' and status='PENDING_CREDENCE_APPROVAL' order by LiqRequestId desc
+select * from STApprovals where DateCreated >'2020-05-29' order by LiqRequestId desc
+select * from STCredenceLogs where   DateCreated >'2020-06-02' order by STRequestLogId desc
+select * from STGAPResponses where DateCreated >'2020-06-02' order by ResponseDescription desc
+
+select * from Admin_users
+--delete from STGAPResponses where id in (1139,1135,1134,1138)
+
+select * from redemptionRequests where ClientID =327745 order by id desc
+
+--delete from STCredenceLogs where STRequestLogId=7651
+--delete from STRequestLogs where LiqRequestId=460778
+--delete from RedemptionRequests where id=460778
+
+
+select top 100 * from RedemptionRequests  order by id desc
+
+
+select * from STGAPResponses log
+inner join RedemptionRequests req on log.LiqRequestId = req.ID
+inner join Prospects client on req.ClientID = client.id
+inner join ProspectBanks pBank on req.CreditBank = pBank.id
+inner join Banks bank on pBank.BankID = bank.id
+inner join Products product on req.FundID = product.ID
+inner join AccountFunds accFund on client.id = accFund.ProspectID
+where log.DateCreated >= '2020-05-29' and log.DateCreated <= '2020-05-30'
+
+
+select * from ProspectBanks where ProspectID=210242
+
+
+select * from RedemptionRequests where 
+clientid in (select clientid from RedemptionRequests where DateCreated >'2020-05-15 13:31' and RequestStatus=0 and 
+id not in (select LiqRequestId from STRequestLogs where DateCreated >'2020-05-15')) and DateCreated >'2020-05-15' and RequestStatus=0 
+order by id desc
+
+select * from RedemptionRequests where DateCreated >'2020-05-28' and ClientID in (5554,262244,329722,311699,262958,211031,5722,284793,311699)
+
+select * from STRequestLogs order by id desc
+  
+select * from STGAPResponses
+
+
+/****** Script for SelectTopNRows command from SSMS  ******/
+SELECT st.*,rr.DateCreated as [Request Date],b.Name as [Bank Name],b.NubanCode,pb.AccountNo,pb.AccountName,rr.Amount FROM STGAPResponses st 
+inner join RedemptionRequests rr on st.LiqRequestId=rr.id
+inner join ProspectBanks pb on rr.CreditBank=pb.id
+inner join Banks b on pb.BankID=b.id
+where st.DateCreated>='2020-05-29'
+order by  st.DateCreated,NubanCode
+
+--update STGAPResponses set responsecode='01' where id in (530,538,539,547,551)
+--select * from STGAPResponses where id in (530,538,539,547,551)
+
+select * from FixedDepositOrders where OrderLevel >=3
+select top 1000 * from Purchases order by id desc
+
+
+--INSERT INTO STRequestLogs 
+--SELECT Id,'PENDING_CREDENCE_APPROVAL','Pushed Liquidation to Credence. Authorization Pending.',DateCreated,null
+--FROM RedemptionRequests WHERE ID in (743655)
+
+--INSERT INTO STCredenceLogs 
+--SELECT Id,LiqRequestId, 0,DateCreated
+--FROM STRequestLogs WHERE liqrequestid in (743655)
+
+--UPDATE RedemptionRequests SET PushedToWF=1 where id IN (732211)
+
+select top 10 * from RedemptionRequests where ClientID in (285788) and DateCreated>='2021-11-23'	order by id desc
+
+select * from RedemptionRequests where id in (743655) order by id desc
+select * FROM STRequestLogs WHERE liqrequestid in (743655) order by id desc
+select * from STApprovals where LiqRequestId in (743655) order by id desc
+select * FROM STCredenceLogs WHERE STRequestLogId in (select id FROM STRequestLogs WHERE liqrequestid in (743655)) order by id desc
+select * from STGAPResponses where LiqRequestId in (743655) order by id desc
+
+
+--update RedemptionRequests set RequestStatus=0,PushedToWF=0,ApprovedBy=NULL,DateApproved=NULL where id=715666
+--update STRequestLogs set Status='PENDING_CREDENCE_APPROVAL' where LiqRequestId=715943
+
+--delete from STCredenceLogs where id in (169439,169438,169437,169436,169435)
+--delete from STRequestLogs Where LiqRequestId in (735750,735324,735317,735011,733929)
+--delete from STRequestLogs where LiqRequestId in (736534)
+--delete from RedemptionRequests where Id in (736534)
+
+select * from Admin_users where id in (2,11,12,1034,1044,1060,1143,1046,1147,1065,1197,1184)
+
+select * from ClientsStatements where trans_type='PURCHASE' AND UpdatedBy IS NULL and DateCreated>'2021-01-01' and DateCreated<'2021-12-08' order by customer_code desc
+select top 20 * from ClientsStatements where customer_code='11189' and trans_type='PURCHASE' and DateCreated>'2021-01-01' and DateCreated<'2021-12-08' order by DateCreated desc
+
+--delete from ClientsStatements where trans_type='PURCHASE' AND UpdatedBy IS NULL and DateCreated>'2021-01-01' and DateCreated<'2021-12-31' 
+
+--update Admin_users set FullName='ELIZABETH RICHARD-BEN' WHERE ID=1044
+
+
+
+select * from RedemptionRequests where id not in (select liqrequestid from STRequestLogs where DateCreated>='2021-01-01') and DateCreated>='2021-01-01' and InstructionType=1 and PushedToWF=1 and RequestStatus in (0,Null) order by id desc
+
+select  * from RedemptionRequests where PushedToWF=0 and RequestStatus=1 order by id desc
+
+select top 100 * from InvestmentPortal.dbo.STGAPResponses where ResponseRequestId='Nothing' and ResponseCode not in ('00') and DateCreated>='2021-12-23' order by id desc  
+
+Select top 100 * from InvestmentPortal.dbo.TransactionLogs where TransType=1 order by id desc
+
+Select top 100 * from InvestmentPortal.dbo.RMBInflows order by id desc
+
+Select * from InvestmentPortal.dbo.TransactionLogs where DateCreated>='2021-12-23 14:00:00.473' and TransType=1 order by id desc
+
+update InvestmentPortal.dbo.TransactionLogs set IgnoreCutoff=0 where  DateCreated>='2021-12-24 14:00:00.473' and TransType=1
+
+--update RedemptionRequests set PushedToWF=1 where RequestStatus=1 and PushedToWF=0
+
+--delete from STApprovals where id=88463
+--update STRequestLogs set Status='PENDING SIGNATORY APPROVAL' where id =169625
+--update RedemptionRequests set PushedToWF=0 where id =718444
+
+--delete from STRequestLogs where id=169625
+
+select top 10 * from TransactionLogs  order by id desc
+
+--delete from AutoSendLog Where TransactionLogID=829815
+--delete from TransactionLogs where id = 829815
+select top 10 * from TransactionLogs where BankRemark like '%TRANSFER BETWEEN CUSTOMERS via GAPS PLACEMENT IFO AMIL SHF. 124066259 PLACEMENT IFO AMIL SHF from AXA MANSARD INVESTMENTS LTD to IOFSL/AXA MANSARD MONEY MKT FU REF: 0051593923124066259000000%' order by id desc
+select top 10 * from AutoInflowlogs where BankRemark like '%TRANSFER BETWEEN CUSTOMERS via GAPS PLACEMENT IFO AMIL SHF. 124066259 PLACEMENT IFO AMIL SHF from AXA MANSARD INVESTMENTS LTD to IOFSL/AXA MANSARD MONEY MKT FU REF: 0051593923124066259000000%' order by id desc
+select top 10 * from SmartReconBanks where Remarks like '%TITI OMIS%' ORDER BY ID DESC
+select * from SmartReconCredences where EntryId in (945810,947000)
+select * from SmartReconCredenceIOs where id in (404255,405398)
+
+select * from OnlineSalesAdmin.dbo.AccessTable where ClientNo='4374'
+select * from OnlineSalesAdmin.dbo.AccessTable where Name like '%Jamal%'
+--delete from OnlineSalesAdmin.dbo.AccessTable where id = 100300
+--update OnlineSalesAdmin.dbo.AccessTable set CustomerNo='3160604131', EnrolleeNo='73755', RSAPIN='PEN100777231316' where id=180637
+
+select * from RMBInflows where originatoraccountnumber='0109299085' order by id desc
+
+select * from Admin_users where Id in (1150,1044)
+
+select * from AccountFunds where VirtualAccountNo is null
+
+select top 10 * from MakerChecker order by id desc
+
+--dbcc checkident ( 'MakerChecker','reseed', 12530)
+
+select * from admin_users where id in (select MakerId from MakerChecker where Status=0 and CheckerId is null)
+select * from admin_users where RoleId=1 and IsActive =1
+
+--delete from prospectBanks where ProspectID in (379752)
+--delete from Accounts where ProspectID in (379752)
+--delete from AccountFunds where VirtualAccountNo = '6190037129'
+--delete from Prospects where id = 379752
+
+
+Update Prospects set IsMovedToCredence = 1 where id in (select distinct ProspectID from AccountFunds where ClientNo is not null)
+
+select top 100 * from prospects order by id desc
+
+select top 100 * from ClientCPDeals where clientName like '%Awodiji%' order by id desc
+
+select top 100 * from STCredenceLogs order by id desc
+
+select * from AccountFunds where ClientAccountNo in (60924,40911,51418,52140)
+
+select * from STRequestLogs where id in (select top 100 STRequestLogId from STCredenceLogs order by id desc) order by DateCreated desc
+
+select top 100 * from TransactionLogs order by id desc
+
+select top 100 * from InvestmentPortal.dbo.STGapResponses where ResponseCode='01' order by id desc
+
+--delete from InvestmentPortal.dbo.STRequestLogs where LiqRequestId = 742716
+--delete from InvestmentPortal.dbo.RedemptionRequests where id=742716
+
+Select top 100 * from settlements order by settlementDate desc
+
+Select top 100 * from settlementTransactions order by PaidAt desc
+
+Select top 100 * from Transactions where ReferenceID in ('AMEC1102364274','AMITTXN479161','AMITTXN479159','AMITTXN479156','AMITTXN479141','AMITTXN479123','GL-GPERX','GL-AWIXT','GL-694Q6','GL-MBLHK','GL-VFIOA','AMITTXN479070','AMITTXN479052','AMITTXN479051','AMITTXN479017') order by id desc
+
+Select top 100 * from settlementTransactions where Reference in ('AMEC1102364274','AMITTXN479161','AMITTXN479159','AMITTXN479156','AMITTXN479141','AMITTXN479123','GL-GPERX','GL-AWIXT','GL-694Q6','GL-MBLHK','GL-VFIOA','AMITTXN479070','AMITTXN479052','AMITTXN479051','AMITTXN479017') order by id desc
+
+select top 100 * from Settlements where id in (4931050)
+
+select top 1000 * from RMBInflows order by id desc
+
+select sum(Amount) from InvestmentPortal.dbo.RedemptionRequests where PushedToWF=1 and DateCreated>='2021-01-01' and DateCreated<='2021-12-31'
+
+select top 100 * from Admin_users where id=1044 order by id desc
+select * from UploadedKYCs where IcVerifiedBy=1202
+
+select * from AccountFunds where clientNo='7953'
+--update AccountFunds set VirtualAccountNo=null,VirtualAccountName=null where id=16675
+select * from Prospects where id=5285
+--update Prospects set AccountType=1 where ID=5285
+
+select top 10 * from STApprovals where LiqRequestId= 716104 order by id desc
+
+select * from Prospects where IsMovedToCredence is null order by DateCreated Desc
+
+select top 100 * from TransactionLogs order by id desc
+--delete from AutoSendLog where TransactionLogID=837388
+--delete from TransactionLogs where id=837388
+
+select * from SmartReconBanks where DateReconciled >'2022-01-03'
+select * from SmartReconCredences where DateReconciled >'2022-01-03'
+
+select * from SmartReconBanks where id in (4920146)
+select * from SmartReconCredences where SmartReconBankId in (4920146)
+
+--update SmartReconBanks set SmartReconCredenceId=0, Status=0, DateReconciled=null where id in (4920146)
+--update SmartReconCredences set SmartReconBankId=0, Status=0, DateReconciled=null where SmartReconBankId in (4920146)
+
+
+
+
+--$2b$13$pX7zbzrU4qEpp5ZPbdNC5e1z/UdxFVkm.8kQ0q0xtrbd8J1wLlOMO
+select * from OnlineSalesAdmin.dbo.AccessTable where email in ('hassanyewandetobi@gmail.com','godwinawojobi@yahoo.com')
+
+select * from Admin_users where isactive=1 order by Unit
+select * from Roles
